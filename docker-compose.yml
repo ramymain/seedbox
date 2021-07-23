@@ -6,14 +6,14 @@ services:
     restart: unless-stopped
     #user: ${PUID:-1000}:${PGID:-1000}
     command: "mount gcrypt: /data/drive \
-    --allow-other \
-    --dir-cache-time 1000h \
-    --log-level DEBUG \
-    --log-file /logs/drive.log \
-    --poll-interval 15s \
-    --umask 002 \
-    --user-agent rclone \
-    --vfs-read-ahead 256M"
+      --allow-other \
+      --dir-cache-time 1000h \
+      --log-level DEBUG \
+      --log-file /logs/drive.log \
+      --poll-interval 15s \
+      --umask 002 \
+      --user-agent rclone \
+      --vfs-read-ahead 256M"
     devices: 
       - /dev/fuse
     cap_add:
@@ -31,3 +31,33 @@ services:
       - /etc/fuse.conf:/etc/fuse.conf:ro
     stdin_open: true # docker run -i
     tty: true        # docker run -t
+  media:
+    container_name: media
+    image: hotio/mergerfs:latest
+    restart: unless-stopped
+    #user: ${PUID:-1000}:${PGID:-1000}
+    command: "/data/local:/data/drive /data/media \
+      -o rw,\
+      use_ino,\
+      allow_other,\
+      func.getattr=newest,\
+      category.action=all,\
+      category.create=ff,\
+      cache.files=auto-full"
+    devices:
+      - /dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /data/drive:/data/drive:shared
+      - /data/media:/data/media:shared
+      - /data/local:/data/local:shared
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - /etc/fuse.conf:/etc/fuse.conf:ro
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    depends_on:
+      - "drive"
