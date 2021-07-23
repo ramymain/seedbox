@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  drive:
+    container_name: drive
+    image: rclone/rclone:latest
+    restart: unless-stopped
+    #user: ${PUID:-1000}:${PGID:-1000}
+    command: "mount gcrypt: /data/drive \
+    --allow-other \
+    --dir-cache-time 1000h \
+    --log-level DEBUG \
+    --log-file /logs/drive.log \
+    --poll-interval 15s \
+    --umask 002 \
+    --user-agent rclone \
+    --vfs-read-ahead 256M"
+    devices: 
+      - /dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /data/config/rclone:/config/rclone
+      - /data/logs/rclone:/logs
+      - /data/cache/rclone:/cache
+      - /data/drive:/data/drive:shared
+      # - ./data/local:/data/local:shared
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - /etc/fuse.conf:/etc/fuse.conf:ro
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
