@@ -86,6 +86,29 @@ services:
     restart: unless-stopped
     depends_on:
       - "media"
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr
+    container_name: sonarr
+    networks:
+      - reverse-proxy
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=Europe/Paris
+    volumes:
+      - /data/config/sonarr:/config
+      - /data/media:/data
+    #ports:
+      #- 8989:8989
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN:-traefik.me}`)"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.tls.certresolver=myresolver"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+    restart: unless-stopped
+    depends_on:
+      - "media"
         
 networks:
   reverse-proxy:
