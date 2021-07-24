@@ -73,8 +73,20 @@ services:
     volumes:
       - /data/config/plex:/config
       - /data/media:/data
-    ports:
-      - "32400:32400"
+    #ports:
+      #- "32400:32400"
+    networks:
+      - reverse-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN:-traefik.me}`)"
+      - "traefik.http.routers.plex.entrypoints=websecure"
+      - "traefik.http.routers.plex.tls.certresolver=myresolver"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
     restart: unless-stopped
     depends_on:
       - "media"
+        
+networks:
+  reverse-proxy:
+    external: true
