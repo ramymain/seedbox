@@ -86,7 +86,7 @@ services:
     restart: unless-stopped
     depends_on:
       - "media"
-  sonarr:
+sonarr:
     image: ghcr.io/linuxserver/sonarr
     container_name: sonarr
     networks:
@@ -106,6 +106,29 @@ services:
       - "traefik.http.routers.sonarr.entrypoints=websecure"
       - "traefik.http.routers.sonarr.tls.certresolver=myresolver"
       - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+    restart: unless-stopped
+    depends_on:
+      - "media"
+  radarr:
+    image: ghcr.io/linuxserver/radarr:latest
+    container_name: radarr
+    networks:
+      - reverse-proxy
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=Europe/Paris
+    volumes:
+      - /data/config/radarr:/config
+      - /data/media:/data
+    # ports:
+    #   - 7878:7878
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.${DOMAIN:-traefik.me}`)"
+      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.tls.certresolver=myresolver"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
     restart: unless-stopped
     depends_on:
       - "media"
