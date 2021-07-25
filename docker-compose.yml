@@ -86,7 +86,7 @@ services:
     restart: unless-stopped
     depends_on:
       - "media"
-sonarr:
+  sonarr:
     image: ghcr.io/linuxserver/sonarr
     container_name: sonarr
     networks:
