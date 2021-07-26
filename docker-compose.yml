@@ -132,7 +132,34 @@ services:
     restart: unless-stopped
     depends_on:
       - "media"
-        
+  qbittorrent:
+    image: ghcr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    networks:
+      - reverse-proxy
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=Europe/Paris
+      - WEBUI_PORT=8080
+    volumes:
+      - /data/config/qbittorrent:/config
+      - /data/media/downloads/torrents:/torrents
+    # ports:
+    #   - 6881:6881
+    #   - 6881:6881/udp
+    #   - 8080:8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbt.rule=Host(`qbt.${DOMAIN:-traefik.me}`)"
+      - "traefik.http.routers.qbt.entrypoints=websecure"
+      - "traefik.http.routers.qbt.tls.certresolver=myresolver"
+      - "traefik.http.services.qbt.loadbalancer.server.port=8080"
+    restart: unless-stopped
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    depends_on:
+      - "media" 
 networks:
   reverse-proxy:
     external: true
